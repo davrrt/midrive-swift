@@ -59,7 +59,12 @@ export default function FlottePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await voituresAPI.create(formData);
+      await voituresAPI.create({
+        ...formData,
+        annee: Number(formData.annee),
+        prixAchat: Number(formData.prixAchat),
+        kilometrage: Number(formData.kilometrage),
+      });
       setDialogOpen(false);
       setFormData({
         immatriculation: "",

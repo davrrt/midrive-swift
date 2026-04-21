@@ -75,7 +75,10 @@ export default function RHPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await employesAPI.create(formData);
+      await employesAPI.create({
+        ...formData,
+        salaire: Number(formData.salaire),
+      });
       setDialogOpen(false);
       setFormData({
         nom: "",
