@@ -67,6 +67,7 @@ export default function ChauffeursPage() {
     try {
       await chauffeursAPI.create({
         ...formData,
+        salaire: Number(formData.salaire),
         voitureId: formData.voitureId || undefined,
       });
       setDialogOpen(false);

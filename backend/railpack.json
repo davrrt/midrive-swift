@@ -1,0 +1,4 @@
+{
+  "start": "npx prisma db push && node dist/index.js",
+  "build": "npm run build"
+}
