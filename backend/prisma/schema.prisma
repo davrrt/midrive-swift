@@ -1,0 +1,112 @@
+// Schéma Prisma pour le dashboard de gestion de flotte VTC Madagascar
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Table des voitures de la flotte
+model Voiture {
+  id              String       @id @default(cuid())
+  immatriculation String       @unique
+  marque          String
+  modele          String
+  annee           Int
+  statut          String       // active | panne | maintenance
+  dateAchat       DateTime
+  prixAchat       Float
+  kilometrage     Int          @default(0)
+  derniereVidange DateTime?
+  chauffeur       Chauffeur?
+  versements      Versement[]
+  reparations     Reparation[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+// Table des chauffeurs
+model Chauffeur {
+  id         String      @id @default(cuid())
+  nom        String
+  prenom     String
+  telephone  String
+  statut     String      // actif | conge | licencie
+  salaire    Float       @default(500000)
+  dateDebut  DateTime
+  voitureId  String?     @unique
+  voiture    Voiture?    @relation(fields: [voitureId], references: [id])
+  versements Versement[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+// Table des versements journaliers
+model Versement {
+  id          String   @id @default(cuid())
+  montant     Float
+  date        DateTime @default(now())
+  statut      String   // ok | manquant | partiel
+  voitureId   String
+  chauffeurId String
+  voiture     Voiture  @relation(fields: [voitureId], references: [id])
+  chauffeur   Chauffeur @relation(fields: [chauffeurId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+// Table des réparations
+model Reparation {
+  id          String   @id @default(cuid())
+  type        String   // vidange | petite | grosse
+  description String
+  cout        Float
+  date        DateTime @default(now())
+  voitureId   String
+  voiture     Voiture  @relation(fields: [voitureId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+// Table des employés (autres que chauffeurs)
+model Employe {
+  id        String   @id @default(cuid())
+  nom       String
+  prenom    String
+  poste     String   // gestionnaire | mecanicien | assistant | laveur
+  salaire   Float
+  dateDebut DateTime
+  statut    String   // actif | inactif
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Configuration globale de la flotte
+model ConfigFlotte {
+  id                   String @id @default(cuid())
+  versementJournalier  Float  @default(80000)
+  joursExploitation    Int    @default(26)
+  coutVidange          Float  @default(250000)
+  intervalleVidange    Int    @default(60) // jours
+  coutPiecesEstime     Float  @default(100000)
+  assuranceAnnuelle    Float  @default(100000)
+  objectifVoitures     Int    @default(15)
+  prixVoiture          Float  @default(12000000)
+  injectionMensuelle   Float  @default(4000000)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+// Table pour l'historique des enveloppes financières
+model Enveloppe {
+  id              String   @id @default(cuid())
+  mois            DateTime
+  reservePieces   Float    @default(0)
+  fondsCroissance Float    @default(0)
+  pochePersonnelle Float   @default(0)
+  reserveIS       Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([mois])
+}
