@@ -73,6 +73,7 @@ export default function VoitureDetailPage() {
     try {
       await reparationsAPI.create({
         ...reparationForm,
+        cout: Number(reparationForm.cout),
         voitureId: id,
       });
       setReparationDialogOpen(false);
