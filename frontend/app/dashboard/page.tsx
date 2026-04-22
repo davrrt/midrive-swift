@@ -113,7 +113,13 @@ export default function DashboardPage() {
         />
         <KPICard
           title="Voitures"
-          value={`${summary?.voituresActives || 0} / ${summary?.totalVoitures || 0}`}
+          value={`${summary?.voituresActives || 0} active${(summary?.voituresActives || 0) > 1 ? "s" : ""}`}
+          compactValue={summary?.voituresActives || 0}
+          subtitle={
+            (summary?.totalVoitures || 0) > (summary?.voituresActives || 0)
+              ? `${(summary?.totalVoitures || 0) - (summary?.voituresActives || 0)} en panne/maintenance`
+              : undefined
+          }
           icon={Car}
         />
       </div>
