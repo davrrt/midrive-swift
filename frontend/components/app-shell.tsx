@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen">
       {/* Mobile Header - visible uniquement < 700px */}
-      <div className="mobile:hidden fixed top-0 left-0 right-0 z-40">
+      <div className="mobile:hidden fixed top-0 left-0 right-0 z-40 pt-[env(safe-area-inset-top)]">
         <MobileHeader onMenuClick={() => setDrawerOpen(true)} />
       </div>
 
@@ -31,7 +31,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main content */}
-      <main className="mobile:ml-60 pt-14 pb-16 mobile:pt-0 mobile:pb-0 p-4 mobile:p-8">
+      <main className="mobile:ml-60 pt-16 pb-20 mobile:pt-0 mobile:pb-0 p-4 mobile:p-8">
         {children}
       </main>
 

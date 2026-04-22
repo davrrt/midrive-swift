@@ -20,7 +20,7 @@ export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
 
       <div className="flex items-center gap-2">
         <Car className="h-6 w-6 text-success" />
-        <span className="font-bold text-lg">Drive Besa</span>
+        <span className="font-bold text-lg">MiDrive Swift</span>
       </div>
 
       <div className="w-10">
