@@ -15,16 +15,9 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { voituresAPI, Voiture } from "@/lib/api";
-import { formatAriary, formatDate, getStatusColor } from "@/lib/utils";
-import { Plus, Car, Wrench, Eye, AlertTriangle } from "lucide-react";
+import { formatAriary } from "@/lib/utils";
+import { Plus, Car, Eye, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 export default function FlottePage() {
@@ -33,7 +26,7 @@ export default function FlottePage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     immatriculation: "",
-    marque: "Toyota",
+    marque: "",
     modele: "",
     annee: new Date().getFullYear().toString(),
     dateAchat: new Date().toISOString().split("T")[0],
@@ -68,7 +61,7 @@ export default function FlottePage() {
       setDialogOpen(false);
       setFormData({
         immatriculation: "",
-        marque: "Toyota",
+        marque: "",
         modele: "",
         annee: new Date().getFullYear().toString(),
         dateAchat: new Date().toISOString().split("T")[0],
@@ -139,23 +132,15 @@ export default function FlottePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="marque">Marque</Label>
-                  <Select
+                  <Input
+                    id="marque"
                     value={formData.marque}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, marque: value })
+                    onChange={(e) =>
+                      setFormData({ ...formData, marque: e.target.value })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Toyota">Toyota</SelectItem>
-                      <SelectItem value="Nissan">Nissan</SelectItem>
-                      <SelectItem value="Honda">Honda</SelectItem>
-                      <SelectItem value="Hyundai">Hyundai</SelectItem>
-                      <SelectItem value="Suzuki">Suzuki</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Toyota, Nissan, etc."
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="modele">Modèle</Label>
