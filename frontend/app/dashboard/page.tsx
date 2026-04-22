@@ -12,7 +12,7 @@ import {
   Alertes,
   RecetteJour,
 } from "@/lib/api";
-import { formatAriary, formatDate, getStatusColor } from "@/lib/utils";
+import { formatAriary, formatAriaryCompact, formatDate, getStatusColor } from "@/lib/utils";
 import {
   LineChart,
   Line,
@@ -89,18 +89,21 @@ export default function DashboardPage() {
       {/* KPI Cards */}
       <div className="grid gap-3 grid-cols-2 mobile:grid-cols-4">
         <KPICard
-          title="Recette du jour"
+          title="Recette jour"
           value={formatAriary(summary?.recetteJour || 0)}
+          compactValue={formatAriaryCompact(summary?.recetteJour || 0)}
           icon={Wallet}
         />
         <KPICard
-          title="Recette du mois"
+          title="Recette mois"
           value={formatAriary(summary?.recetteMois || 0)}
+          compactValue={formatAriaryCompact(summary?.recetteMois || 0)}
           icon={Calendar}
         />
         <KPICard
-          title="Bénéfice net du mois"
+          title="Bénéfice net"
           value={formatAriary(summary?.beneficeNetMois || 0)}
+          compactValue={formatAriaryCompact(summary?.beneficeNetMois || 0)}
           icon={TrendingUp}
           className={
             (summary?.beneficeNetMois || 0) >= 0
@@ -109,7 +112,7 @@ export default function DashboardPage() {
           }
         />
         <KPICard
-          title="Voitures actives"
+          title="Voitures"
           value={`${summary?.voituresActives || 0} / ${summary?.totalVoitures || 0}`}
           icon={Car}
         />

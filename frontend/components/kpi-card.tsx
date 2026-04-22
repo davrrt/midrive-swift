@@ -5,6 +5,7 @@ import { LucideIcon } from "lucide-react";
 interface KPICardProps {
   title: string;
   value: string | number;
+  compactValue?: string | number;
   subtitle?: string;
   icon?: LucideIcon;
   trend?: {
@@ -17,6 +18,7 @@ interface KPICardProps {
 export function KPICard({
   title,
   value,
+  compactValue,
   subtitle,
   icon: Icon,
   trend,
@@ -33,7 +35,14 @@ export function KPICard({
             </div>
           )}
         </div>
-        <p className="text-lg mobile:text-2xl font-bold tracking-tight whitespace-nowrap">{value}</p>
+        {/* Version mobile compacte */}
+        <p className="text-xl font-bold tracking-tight whitespace-nowrap mobile:hidden">
+          {compactValue ?? value}
+        </p>
+        {/* Version desktop complète */}
+        <p className="hidden mobile:block text-2xl font-bold tracking-tight whitespace-nowrap">
+          {value}
+        </p>
         {subtitle && (
           <p className="text-xs mobile:text-sm text-muted-foreground">{subtitle}</p>
         )}

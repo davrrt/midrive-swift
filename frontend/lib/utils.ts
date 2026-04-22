@@ -14,6 +14,22 @@ export function formatAriary(montant: number): string {
   }).format(montant) + " Ar";
 }
 
+// Formater un montant en format compact (65k, 1.2M)
+export function formatAriaryCompact(montant: number): string {
+  const absValue = Math.abs(montant);
+  const sign = montant < 0 ? "-" : "";
+
+  if (absValue >= 1000000) {
+    const value = absValue / 1000000;
+    return sign + (value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)) + "M";
+  }
+  if (absValue >= 1000) {
+    const value = absValue / 1000;
+    return sign + (value % 1 === 0 ? value.toFixed(0) : value.toFixed(0)) + "k";
+  }
+  return sign + absValue.toString();
+}
+
 // Formater une date
 export function formatDate(date: string | Date): string {
   return new Intl.DateTimeFormat("fr-FR", {
