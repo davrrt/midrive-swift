@@ -74,6 +74,8 @@ export function getStatusColor(statut: string): string {
     case "licencie":
     case "inactif":
       return "bg-destructive text-white";
+    case "off":
+      return "bg-muted text-muted-foreground";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -95,6 +97,8 @@ export function getStatusTextColor(statut: string): string {
     case "licencie":
     case "inactif":
       return "text-destructive";
+    case "off":
+      return "text-muted-foreground";
     default:
       return "text-muted-foreground";
   }

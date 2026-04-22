@@ -20,8 +20,25 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middlewares
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  process.env.FRONTEND_URL,
+  'https://frontend-production-e45d.up.railway.app',
+  'https://midev-swift.work'
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Autoriser les requêtes sans origin (comme les apps mobiles ou Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Autoriser tous les origines pour le dev
+    }
+  },
   credentials: true
 }));
 app.use(express.json());

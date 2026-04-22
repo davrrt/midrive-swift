@@ -89,9 +89,9 @@ export default function DashboardPage() {
       {/* KPI Cards */}
       <div className="grid gap-3 grid-cols-2 mobile:grid-cols-4">
         <KPICard
-          title="Recette jour"
-          value={formatAriary(summary?.recetteJour || 0)}
-          compactValue={formatAriaryCompact(summary?.recetteJour || 0)}
+          title="Recette semaine"
+          value={formatAriary(summary?.recetteSemaine || 0)}
+          compactValue={formatAriaryCompact(summary?.recetteSemaine || 0)}
           icon={Wallet}
         />
         <KPICard

@@ -82,6 +82,8 @@ export default function FlottePage() {
         return "warning";
       case "panne":
         return "destructive";
+      case "off":
+        return "secondary";
       default:
         return "secondary";
     }
@@ -241,8 +243,10 @@ export default function FlottePage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{voitures.length}</div>
-            <p className="text-sm text-muted-foreground">Total</p>
+            <div className="text-2xl font-bold text-muted-foreground">
+              {voitures.filter((v) => v.statut === "off").length}
+            </div>
+            <p className="text-sm text-muted-foreground">Off</p>
           </CardContent>
         </Card>
       </div>
@@ -266,7 +270,9 @@ export default function FlottePage() {
                     ? "Active"
                     : voiture.statut === "maintenance"
                     ? "Maintenance"
-                    : "Panne"}
+                    : voiture.statut === "panne"
+                    ? "Panne"
+                    : "Off"}
                 </Badge>
               </div>
             </CardHeader>

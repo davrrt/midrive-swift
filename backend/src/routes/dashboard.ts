@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth, subDays } from 'date-fns';
+import { startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, startOfWeek, endOfWeek } from 'date-fns';
 
 const router = Router();
 
@@ -8,8 +8,8 @@ const router = Router();
 router.get('/summary', async (req: Request, res: Response) => {
   try {
     const today = new Date();
-    const startDay = startOfDay(today);
-    const endDay = endOfDay(today);
+    const startWeek = startOfWeek(today, { weekStartsOn: 1 }); // Lundi
+    const endWeekDate = endOfWeek(today, { weekStartsOn: 1 }); // Dimanche
     const startMonth = startOfMonth(today);
     const endMonth = endOfMonth(today);
 
@@ -18,10 +18,10 @@ router.get('/summary', async (req: Request, res: Response) => {
     const versementJournalier = config?.versementJournalier || 80000;
     const joursExploitation = config?.joursExploitation || 26;
 
-    // Versements du jour
-    const versementsJour = await prisma.versement.aggregate({
+    // Versements de la semaine
+    const versementsSemaine = await prisma.versement.aggregate({
       where: {
-        date: { gte: startDay, lte: endDay }
+        date: { gte: startWeek, lte: endWeekDate }
       },
       _sum: { montant: true }
     });
@@ -76,7 +76,7 @@ router.get('/summary', async (req: Request, res: Response) => {
     const objectifMensuel = versementJournalier * joursExploitation * voituresActives;
 
     res.json({
-      recetteJour: versementsJour._sum.montant || 0,
+      recetteSemaine: versementsSemaine._sum.montant || 0,
       recetteMois: recetteBruteMois,
       beneficeNetMois: Math.round(beneficeNetMois),
       voituresActives,

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { voituresAPI, reparationsAPI, versementsAPI, chauffeursAPI, VoitureDetail, ChauffeurStats } from "@/lib/api";
 import { formatAriary, formatDate } from "@/lib/utils";
-import { ArrowLeft, Wrench, Plus, Droplet, Banknote, UserPlus } from "lucide-react";
+import { ArrowLeft, Plus, Banknote, UserPlus } from "lucide-react";
 import Link from "next/link";
 
 export default function VoitureDetailPage() {
@@ -77,15 +77,6 @@ export default function VoitureDetailPage() {
       setVoiture(data);
     } catch (error) {
       console.error("Erreur chargement voiture:", error);
-    }
-  }
-
-  async function handleVidange() {
-    try {
-      await voituresAPI.enregistrerVidange(id);
-      fetchVoiture();
-    } catch (error) {
-      console.error("Erreur vidange:", error);
     }
   }
 
@@ -212,6 +203,7 @@ export default function VoitureDetailPage() {
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="maintenance">Maintenance</SelectItem>
             <SelectItem value="panne">Panne</SelectItem>
+            <SelectItem value="off">Off</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -238,7 +230,7 @@ export default function VoitureDetailPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total réparations</p>
+            <p className="text-sm text-muted-foreground">Total dépenses</p>
             <p className="text-xl font-bold">
               {formatAriary(voiture.totalReparations)}
             </p>
@@ -370,10 +362,6 @@ export default function VoitureDetailPage() {
             </form>
           </DialogContent>
         </Dialog>
-        <Button variant="outline" onClick={handleVidange}>
-          <Droplet className="mr-2 h-4 w-4" />
-          Enregistrer vidange
-        </Button>
         <Dialog
           open={reparationDialogOpen}
           onOpenChange={setReparationDialogOpen}
@@ -381,12 +369,12 @@ export default function VoitureDetailPage() {
           <DialogTrigger asChild>
             <Button variant="outline">
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter réparation
+              Ajouter dépense
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Ajouter une réparation</DialogTitle>
+              <DialogTitle>Ajouter une dépense</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddReparation} className="space-y-4">
               <div className="space-y-2">
@@ -402,8 +390,12 @@ export default function VoitureDetailPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="vidange">Vidange</SelectItem>
-                    <SelectItem value="petite">Petite réparation</SelectItem>
-                    <SelectItem value="grosse">Grosse réparation</SelectItem>
+                    <SelectItem value="reparation">Réparation</SelectItem>
+                    <SelectItem value="pneu">Pneu / Gonflage</SelectItem>
+                    <SelectItem value="carburant">Carburant</SelectItem>
+                    <SelectItem value="assurance">Assurance</SelectItem>
+                    <SelectItem value="visite">Visite technique</SelectItem>
+                    <SelectItem value="divers">Divers</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -465,127 +457,158 @@ export default function VoitureDetailPage() {
         </Dialog>
       </div>
 
-      {/* Tabs historique */}
-      <Tabs defaultValue="versements">
-        <TabsList>
-          <TabsTrigger value="versements">
-            Versements ({voiture.versements.length})
-          </TabsTrigger>
-          <TabsTrigger value="reparations">
-            Réparations ({voiture.reparations.length})
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="versements">
-          <Card>
-            <CardContent className="pt-6">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border text-left text-sm text-muted-foreground">
-                    <th className="pb-3 font-medium">Date</th>
-                    <th className="pb-3 font-medium">Chauffeur</th>
-                    <th className="pb-3 text-right font-medium">Montant</th>
-                    <th className="pb-3 text-right font-medium">Statut</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {voiture.versements.map((v) => (
-                    <tr
-                      key={v.id}
-                      className="table-row-hover border-b border-border text-sm"
-                    >
-                      <td className="py-3">{formatDate(v.date)}</td>
-                      <td className="py-3">
-                        {v.chauffeur
-                          ? `${v.chauffeur.prenom} ${v.chauffeur.nom}`
-                          : "-"}
-                      </td>
-                      <td className="py-3 text-right">
-                        {formatAriary(v.montant)}
-                      </td>
-                      <td className="py-3 text-right">
-                        <Badge
-                          variant={
-                            v.statut === "ok"
-                              ? "success"
-                              : v.statut === "partiel"
-                              ? "warning"
-                              : "destructive"
-                          }
-                        >
-                          {v.statut === "ok"
-                            ? "OK"
-                            : v.statut === "partiel"
-                            ? "Partiel"
-                            : "Manquant"}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                  {voiture.versements.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="py-8 text-center text-muted-foreground"
-                      >
-                        Aucun versement
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="reparations">
-          <Card>
-            <CardContent className="pt-6">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border text-left text-sm text-muted-foreground">
-                    <th className="pb-3 font-medium">Date</th>
-                    <th className="pb-3 font-medium">Type</th>
-                    <th className="pb-3 font-medium">Description</th>
-                    <th className="pb-3 text-right font-medium">Coût</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {voiture.reparations.map((r) => (
-                    <tr
-                      key={r.id}
-                      className="table-row-hover border-b border-border text-sm"
-                    >
-                      <td className="py-3">{formatDate(r.date)}</td>
-                      <td className="py-3">
-                        <Badge variant="secondary">
-                          {r.type === "vidange"
-                            ? "Vidange"
-                            : r.type === "petite"
-                            ? "Petite"
-                            : "Grosse"}
-                        </Badge>
-                      </td>
-                      <td className="py-3">{r.description}</td>
-                      <td className="py-3 text-right">
-                        {formatAriary(r.cout)}
-                      </td>
-                    </tr>
-                  ))}
-                  {voiture.reparations.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={4}
-                        className="py-8 text-center text-muted-foreground"
-                      >
-                        Aucune réparation
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Historique */}
+      <HistoriqueSection voiture={voiture} />
     </div>
   );
+}
+
+// Composant Historique avec filtres
+function HistoriqueSection({ voiture }: { voiture: VoitureDetail }) {
+  const [filter, setFilter] = useState<"tout" | "mois" | "precedent">("mois");
+  const [tab, setTab] = useState<"tout" | "recettes" | "depenses">("tout");
+
+  // Créer un historique combiné
+  const historique = [
+    ...voiture.versements.map((v) => ({
+      id: v.id,
+      date: v.date,
+      type: "recette" as const,
+      libelle: "Recette",
+      description: v.chauffeur ? `${v.chauffeur.prenom} ${v.chauffeur.nom}` : "Chauffeur",
+      montant: v.montant,
+    })),
+    ...voiture.reparations.map((r) => ({
+      id: r.id,
+      date: r.date,
+      type: "depense" as const,
+      libelle: getDepenseLabel(r.type),
+      description: r.description,
+      montant: -r.cout,
+    })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // Filtrer par période
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+  const filteredHistorique = historique.filter((item) => {
+    const date = new Date(item.date);
+    if (filter === "mois") return date >= startOfMonth;
+    if (filter === "precedent") return date >= startOfLastMonth && date <= endOfLastMonth;
+    return true;
+  }).filter((item) => {
+    if (tab === "recettes") return item.type === "recette";
+    if (tab === "depenses") return item.type === "depense";
+    return true;
+  });
+
+  // Calcul totaux
+  const totalRecettes = filteredHistorique
+    .filter((i) => i.type === "recette")
+    .reduce((acc, i) => acc + i.montant, 0);
+  const totalDepenses = filteredHistorique
+    .filter((i) => i.type === "depense")
+    .reduce((acc, i) => acc + Math.abs(i.montant), 0);
+  const solde = totalRecettes - totalDepenses;
+
+  return (
+    <Card>
+      <CardHeader className="pb-4">
+        <div className="flex flex-col mobile:flex-row mobile:items-center justify-between gap-4">
+          <CardTitle className="text-lg">Historique</CardTitle>
+          <div className="flex gap-2">
+            <Select value={filter} onValueChange={(v: "tout" | "mois" | "precedent") => setFilter(v)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mois">Ce mois</SelectItem>
+                <SelectItem value="precedent">Mois précédent</SelectItem>
+                <SelectItem value="tout">Tout</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        {/* Résumé */}
+        <div className="grid grid-cols-3 gap-4 mt-4 text-center">
+          <div>
+            <p className="text-xs text-muted-foreground">Recettes</p>
+            <p className="text-lg font-bold text-success">+{formatAriary(totalRecettes)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Dépenses</p>
+            <p className="text-lg font-bold text-destructive">-{formatAriary(totalDepenses)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Solde</p>
+            <p className={`text-lg font-bold ${solde >= 0 ? "text-success" : "text-destructive"}`}>
+              {solde >= 0 ? "+" : ""}{formatAriary(solde)}
+            </p>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/* Tabs */}
+        <Tabs value={tab} onValueChange={(v) => setTab(v as "tout" | "recettes" | "depenses")}>
+          <TabsList className="w-full mb-4">
+            <TabsTrigger value="tout" className="flex-1">Tout</TabsTrigger>
+            <TabsTrigger value="recettes" className="flex-1">Recettes</TabsTrigger>
+            <TabsTrigger value="depenses" className="flex-1">Dépenses</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Liste */}
+        <div className="space-y-2">
+          {filteredHistorique.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center justify-between p-3 rounded-lg bg-secondary/50"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <Badge variant={item.type === "recette" ? "success" : "secondary"} className="text-xs">
+                    {item.libelle}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDate(item.date)}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground truncate mt-1">
+                  {item.description}
+                </p>
+              </div>
+              <p className={`text-base font-bold whitespace-nowrap ml-4 ${
+                item.type === "recette" ? "text-success" : "text-destructive"
+              }`}>
+                {item.type === "recette" ? "+" : ""}{formatAriary(item.montant)}
+              </p>
+            </div>
+          ))}
+          {filteredHistorique.length === 0 && (
+            <p className="text-center text-muted-foreground py-8">
+              Aucune transaction
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getDepenseLabel(type: string): string {
+  const labels: Record<string, string> = {
+    vidange: "Vidange",
+    reparation: "Réparation",
+    pneu: "Pneu",
+    carburant: "Carburant",
+    assurance: "Assurance",
+    visite: "Visite",
+    divers: "Divers",
+    petite: "Réparation",
+    grosse: "Réparation",
+  };
+  return labels[type] || type;
 }

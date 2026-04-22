@@ -149,7 +149,7 @@ export const configAPI = {
 
 // Types
 export interface DashboardSummary {
-  recetteJour: number;
+  recetteSemaine: number;
   recetteMois: number;
   beneficeNetMois: number;
   voituresActives: number;
