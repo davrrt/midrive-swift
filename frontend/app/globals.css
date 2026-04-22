@@ -94,3 +94,18 @@
 .table-row-hover:hover {
   background-color: hsl(var(--accent));
 }
+
+/* PWA iOS Safe Area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Standalone mode styles */
+@media all and (display-mode: standalone) {
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
