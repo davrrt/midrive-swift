@@ -68,7 +68,7 @@ export default function ChauffeursPage() {
       await chauffeursAPI.create({
         ...formData,
         salaire: Number(formData.salaire),
-        voitureId: formData.voitureId || undefined,
+        voitureId: formData.voitureId && formData.voitureId !== "none" ? formData.voitureId : undefined,
       });
       setDialogOpen(false);
       setFormData({
@@ -90,7 +90,7 @@ export default function ChauffeursPage() {
     try {
       await chauffeursAPI.assigner(
         selectedChauffeur.id,
-        voitureId || null
+        voitureId === "none" ? null : voitureId
       );
       setAssignDialogOpen(false);
       setSelectedChauffeur(null);
@@ -206,7 +206,7 @@ export default function ChauffeursPage() {
                       <SelectValue placeholder="Aucune" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Aucune</SelectItem>
+                      <SelectItem value="none">Aucune</SelectItem>
                       {voituresDisponibles.map((v) => (
                         <SelectItem key={v.id} value={v.id}>
                           {v.immatriculation} - {v.marque} {v.modele}
@@ -399,7 +399,7 @@ export default function ChauffeursPage() {
                   <SelectValue placeholder="Sélectionner une voiture" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Aucune (retirer l'assignation)</SelectItem>
+                  <SelectItem value="none">Aucune (retirer l'assignation)</SelectItem>
                   {voituresDisponibles.map((v) => (
                     <SelectItem key={v.id} value={v.id}>
                       {v.immatriculation} - {v.marque} {v.modele}
