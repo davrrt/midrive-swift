@@ -24,9 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { voituresAPI, reparationsAPI, versementsAPI, VoitureDetail } from "@/lib/api";
+import { voituresAPI, reparationsAPI, versementsAPI, chauffeursAPI, VoitureDetail, ChauffeurStats } from "@/lib/api";
 import { formatAriary, formatDate } from "@/lib/utils";
-import { ArrowLeft, Wrench, Plus, Droplet, Banknote } from "lucide-react";
+import { ArrowLeft, Wrench, Plus, Droplet, Banknote, UserPlus } from "lucide-react";
 import Link from "next/link";
 
 export default function VoitureDetailPage() {
@@ -35,9 +35,12 @@ export default function VoitureDetailPage() {
   const id = params.id as string;
 
   const [voiture, setVoiture] = useState<VoitureDetail | null>(null);
+  const [chauffeurs, setChauffeurs] = useState<ChauffeurStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [reparationDialogOpen, setReparationDialogOpen] = useState(false);
   const [versementDialogOpen, setVersementDialogOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedChauffeurId, setSelectedChauffeurId] = useState<string>("");
   const [reparationForm, setReparationForm] = useState({
     type: "petite",
     description: "",
@@ -50,8 +53,23 @@ export default function VoitureDetailPage() {
   });
 
   useEffect(() => {
-    fetchVoiture();
+    fetchData();
   }, [id]);
+
+  async function fetchData() {
+    try {
+      const [voitureData, chauffeursData] = await Promise.all([
+        voituresAPI.getById(id),
+        chauffeursAPI.getAll(),
+      ]);
+      setVoiture(voitureData);
+      setChauffeurs(chauffeursData);
+    } catch (error) {
+      console.error("Erreur chargement:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function fetchVoiture() {
     try {
@@ -59,8 +77,6 @@ export default function VoitureDetailPage() {
       setVoiture(data);
     } catch (error) {
       console.error("Erreur chargement voiture:", error);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -102,6 +118,36 @@ export default function VoitureDetailPage() {
       console.error("Erreur changement statut:", error);
     }
   }
+
+  async function handleAssignChauffeur() {
+    if (!selectedChauffeurId || selectedChauffeurId === "none") {
+      // Retirer l'assignation
+      if (voiture?.chauffeur) {
+        try {
+          await chauffeursAPI.assigner(voiture.chauffeur.id, null);
+          setAssignDialogOpen(false);
+          setSelectedChauffeurId("");
+          fetchData();
+        } catch (error) {
+          console.error("Erreur retrait assignation:", error);
+        }
+      }
+      return;
+    }
+    try {
+      await chauffeursAPI.assigner(selectedChauffeurId, id);
+      setAssignDialogOpen(false);
+      setSelectedChauffeurId("");
+      fetchData();
+    } catch (error) {
+      console.error("Erreur assignation chauffeur:", error);
+    }
+  }
+
+  // Chauffeurs disponibles (sans voiture ou déjà sur cette voiture)
+  const chauffeursDisponibles = chauffeurs.filter(
+    (c) => c.statut === "actif" && (!c.voitureId || c.voitureId === id)
+  );
 
   async function handleAddVersement(e: React.FormEvent) {
     e.preventDefault();
@@ -210,6 +256,56 @@ export default function VoitureDetailPage() {
 
       {/* Actions rapides */}
       <div className="flex flex-wrap gap-4">
+        <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant={voiture.chauffeur ? "outline" : "default"}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              {voiture.chauffeur ? "Changer chauffeur" : "Assigner chauffeur"}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Assigner un chauffeur</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Chauffeur actuel</Label>
+                <p className="text-sm text-muted-foreground">
+                  {voiture.chauffeur
+                    ? `${voiture.chauffeur.prenom} ${voiture.chauffeur.nom}`
+                    : "Aucun"}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>Nouveau chauffeur</Label>
+                <Select
+                  value={selectedChauffeurId}
+                  onValueChange={setSelectedChauffeurId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un chauffeur" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {voiture.chauffeur && (
+                      <SelectItem value="none">Retirer l'assignation</SelectItem>
+                    )}
+                    {chauffeursDisponibles.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.prenom} {c.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Annuler</Button>
+                </DialogClose>
+                <Button onClick={handleAssignChauffeur}>Assigner</Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
         <Dialog
           open={versementDialogOpen}
           onOpenChange={setVersementDialogOpen}
