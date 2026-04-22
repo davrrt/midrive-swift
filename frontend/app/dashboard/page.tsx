@@ -12,6 +12,7 @@ import {
   Alertes,
   RecetteJour,
 } from "@/lib/api";
+import { startOfWeek, isAfter, parseISO } from "date-fns";
 import { formatAriary, formatAriaryCompact, formatDate, getStatusColor } from "@/lib/utils";
 import {
   LineChart,
@@ -76,6 +77,12 @@ export default function DashboardPage() {
     (alertes.vidangesRetard.length > 0 ||
       alertes.chauffeursSansVersement.length > 0);
 
+  // Calculer la recette de la semaine à partir des données 30 jours
+  const debutSemaine = startOfWeek(new Date(), { weekStartsOn: 1 }); // Lundi
+  const recetteSemaine = recettes30j
+    .filter((r) => isAfter(parseISO(r.date), debutSemaine) || parseISO(r.date).getTime() === debutSemaine.getTime())
+    .reduce((acc, r) => acc + r.montant, 0);
+
   return (
     <div className="space-y-4 mobile:space-y-8">
       {/* Header */}
@@ -90,8 +97,8 @@ export default function DashboardPage() {
       <div className="grid gap-3 grid-cols-2 mobile:grid-cols-4">
         <KPICard
           title="Recette semaine"
-          value={formatAriary(summary?.recetteSemaine || 0)}
-          compactValue={formatAriaryCompact(summary?.recetteSemaine || 0)}
+          value={formatAriary(recetteSemaine)}
+          compactValue={formatAriaryCompact(recetteSemaine)}
           icon={Wallet}
         />
         <KPICard
