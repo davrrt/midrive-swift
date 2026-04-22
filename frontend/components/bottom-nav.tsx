@@ -23,7 +23,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="h-16 bg-background border-t border-border flex items-center justify-around px-2">
+    <nav className="bg-background border-t border-border flex items-center justify-around px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
       {navigation.map((item) => {
         const isActive = pathname.startsWith(item.href)
         return (
