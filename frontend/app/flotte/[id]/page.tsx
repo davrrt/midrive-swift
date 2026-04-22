@@ -24,9 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { voituresAPI, reparationsAPI, VoitureDetail } from "@/lib/api";
+import { voituresAPI, reparationsAPI, versementsAPI, VoitureDetail } from "@/lib/api";
 import { formatAriary, formatDate } from "@/lib/utils";
-import { ArrowLeft, Wrench, Plus, Droplet } from "lucide-react";
+import { ArrowLeft, Wrench, Plus, Droplet, Banknote } from "lucide-react";
 import Link from "next/link";
 
 export default function VoitureDetailPage() {
@@ -37,10 +37,15 @@ export default function VoitureDetailPage() {
   const [voiture, setVoiture] = useState<VoitureDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [reparationDialogOpen, setReparationDialogOpen] = useState(false);
+  const [versementDialogOpen, setVersementDialogOpen] = useState(false);
   const [reparationForm, setReparationForm] = useState({
     type: "petite",
     description: "",
     cout: "",
+    date: new Date().toISOString().split("T")[0],
+  });
+  const [versementForm, setVersementForm] = useState({
+    montant: "80000",
     date: new Date().toISOString().split("T")[0],
   });
 
@@ -95,6 +100,30 @@ export default function VoitureDetailPage() {
       fetchVoiture();
     } catch (error) {
       console.error("Erreur changement statut:", error);
+    }
+  }
+
+  async function handleAddVersement(e: React.FormEvent) {
+    e.preventDefault();
+    if (!voiture?.chauffeur) {
+      alert("Cette voiture n'a pas de chauffeur assigné");
+      return;
+    }
+    try {
+      await versementsAPI.create({
+        montant: Number(versementForm.montant),
+        voitureId: id,
+        chauffeurId: voiture.chauffeur.id,
+        date: versementForm.date,
+      });
+      setVersementDialogOpen(false);
+      setVersementForm({
+        montant: "80000",
+        date: new Date().toISOString().split("T")[0],
+      });
+      fetchVoiture();
+    } catch (error) {
+      console.error("Erreur ajout versement:", error);
     }
   }
 
@@ -180,8 +209,72 @@ export default function VoitureDetailPage() {
       </div>
 
       {/* Actions rapides */}
-      <div className="flex gap-4">
-        <Button onClick={handleVidange}>
+      <div className="flex flex-wrap gap-4">
+        <Dialog
+          open={versementDialogOpen}
+          onOpenChange={setVersementDialogOpen}
+        >
+          <DialogTrigger asChild>
+            <Button disabled={!voiture.chauffeur}>
+              <Banknote className="mr-2 h-4 w-4" />
+              Ajouter recette
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ajouter une recette quotidienne</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleAddVersement} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Chauffeur</Label>
+                <p className="text-sm text-muted-foreground">
+                  {voiture.chauffeur
+                    ? `${voiture.chauffeur.prenom} ${voiture.chauffeur.nom}`
+                    : "Aucun chauffeur assigné"}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="montant">Montant (Ar)</Label>
+                  <Input
+                    id="montant"
+                    type="number"
+                    value={versementForm.montant}
+                    onChange={(e) =>
+                      setVersementForm({
+                        ...versementForm,
+                        montant: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dateVersement">Date</Label>
+                  <Input
+                    id="dateVersement"
+                    type="date"
+                    value={versementForm.date}
+                    onChange={(e) =>
+                      setVersementForm({
+                        ...versementForm,
+                        date: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Annuler</Button>
+                </DialogClose>
+                <Button type="submit">Ajouter</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+        <Button variant="outline" onClick={handleVidange}>
           <Droplet className="mr-2 h-4 w-4" />
           Enregistrer vidange
         </Button>
