@@ -7,12 +7,13 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
   dashboardAPI,
+  versementsAPI,
   DashboardSummary,
   Versement,
   Alertes,
   RecetteJour,
 } from "@/lib/api";
-import { startOfWeek, isAfter, parseISO } from "date-fns";
+import { startOfWeek, isAfter, parseISO, isSameDay } from "date-fns";
 import { formatAriary, formatAriaryCompact, formatDate, getStatusColor } from "@/lib/utils";
 import {
   LineChart,
@@ -34,7 +35,7 @@ import { TableMobileCard } from "@/components/table-mobile-card";
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [versementsJour, setVersementsJour] = useState<Versement[]>([]);
+  const [versementsSemaine, setVersementsSemaine] = useState<Versement[]>([]);
   const [alertes, setAlertes] = useState<Alertes | null>(null);
   const [recettes30j, setRecettes30j] = useState<RecetteJour[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,13 +46,20 @@ export default function DashboardPage() {
         const [summaryData, versementsData, alertesData, recettesData] =
           await Promise.all([
             dashboardAPI.getSummary(),
-            dashboardAPI.getVersementsJour(),
+            versementsAPI.getAll({ limit: 50 }),
             dashboardAPI.getAlertes(),
             dashboardAPI.getRecettes30j(),
           ]);
 
+        // Filtrer les versements de la semaine
+        const debutSemaine = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const versementsFiltres = versementsData.filter((v) => {
+          const dateV = parseISO(v.date);
+          return isAfter(dateV, debutSemaine) || isSameDay(dateV, debutSemaine);
+        });
+
         setSummary(summaryData);
-        setVersementsJour(versementsData);
+        setVersementsSemaine(versementsFiltres);
         setAlertes(alertesData);
         setRecettes30j(recettesData);
       } catch (error) {
@@ -250,34 +258,30 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Tableau versements du jour */}
+        {/* Tableau versements de la semaine */}
         <Card className="p-4 mobile:p-6">
           <CardHeader className="p-0 pb-4">
             <CardTitle className="text-base mobile:text-lg font-medium">
-              Versements du jour
+              Versements de la semaine
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {versementsJour.length === 0 ? (
+            {versementsSemaine.length === 0 ? (
               <p className="py-8 text-center text-muted-foreground">
-                Aucun versement aujourd'hui
+                Aucun versement cette semaine
               </p>
             ) : (
               <>
                 {/* Mobile: Cards */}
                 <div className="mobile:hidden space-y-3 max-h-72 overflow-auto">
-                  {versementsJour.map((v) => (
+                  {versementsSemaine.map((v) => (
                     <TableMobileCard
                       key={v.id}
                       title={v.chauffeur ? `${v.chauffeur.prenom} ${v.chauffeur.nom}` : "-"}
-                      subtitle={v.voiture?.immatriculation || "-"}
+                      subtitle={formatDate(v.date)}
                       data={[
                         { label: "Montant", value: formatAriary(v.montant) },
                       ]}
-                      status={{
-                        label: v.statut === "ok" ? "OK" : v.statut === "partiel" ? "Partiel" : "Manquant",
-                        variant: v.statut === "ok" ? "success" : v.statut === "partiel" ? "warning" : "destructive",
-                      }}
                     />
                   ))}
                 </div>
@@ -287,20 +291,19 @@ export default function DashboardPage() {
                   <table className="w-full">
                     <thead className="sticky top-0 bg-card">
                       <tr className="border-b border-border text-left text-sm text-muted-foreground">
-                        <th className="pb-3 font-medium">Voiture</th>
+                        <th className="pb-3 font-medium">Date</th>
                         <th className="pb-3 font-medium">Chauffeur</th>
                         <th className="pb-3 text-right font-medium">Montant</th>
-                        <th className="pb-3 text-right font-medium">Statut</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {versementsJour.map((v) => (
+                      {versementsSemaine.map((v) => (
                         <tr
                           key={v.id}
                           className="table-row-hover border-b border-border text-sm"
                         >
                           <td className="py-3">
-                            {v.voiture?.immatriculation || "-"}
+                            {formatDate(v.date)}
                           </td>
                           <td className="py-3">
                             {v.chauffeur
@@ -309,23 +312,6 @@ export default function DashboardPage() {
                           </td>
                           <td className="py-3 text-right">
                             {formatAriary(v.montant)}
-                          </td>
-                          <td className="py-3 text-right">
-                            <Badge
-                              variant={
-                                v.statut === "ok"
-                                  ? "success"
-                                  : v.statut === "partiel"
-                                  ? "warning"
-                                  : "destructive"
-                              }
-                            >
-                              {v.statut === "ok"
-                                ? "OK"
-                                : v.statut === "partiel"
-                                ? "Partiel"
-                                : "Manquant"}
-                            </Badge>
                           </td>
                         </tr>
                       ))}
