@@ -45,15 +45,18 @@ model Chauffeur {
 
 // Table des versements journaliers
 model Versement {
-  id          String   @id @default(cuid())
-  montant     Float
-  date        DateTime @default(now())
-  statut      String   // ok | manquant | partiel
-  voitureId   String
-  chauffeurId String
-  voiture     Voiture  @relation(fields: [voitureId], references: [id])
-  chauffeur   Chauffeur @relation(fields: [chauffeurId], references: [id])
-  createdAt   DateTime @default(now())
+  id               String   @id @default(cuid())
+  montant          Float
+  date             DateTime @default(now())
+  statut           String   // ok | manquant | partiel
+  kilometrage      Int?     // km au moment du versement
+  carburantMontant Float?   // montant carburant en Ar (optionnel)
+  carburantLitres  Float?   // litres achetés (optionnel)
+  voitureId        String
+  chauffeurId      String
+  voiture          Voiture  @relation(fields: [voitureId], references: [id])
+  chauffeur        Chauffeur @relation(fields: [chauffeurId], references: [id])
+  createdAt        DateTime @default(now())
 }
 
 // Table des réparations

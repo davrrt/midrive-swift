@@ -71,7 +71,15 @@ export const versementsAPI = {
     if (params?.chauffeurId) query.set("chauffeurId", params.chauffeurId);
     return fetchAPI<Versement[]>(`/versements?${query.toString()}`);
   },
-  create: (data: { montant: number; voitureId: string; chauffeurId: string; date?: string }) =>
+  create: (data: {
+    montant: number;
+    voitureId: string;
+    chauffeurId: string;
+    date?: string;
+    kilometrage?: number;
+    carburantMontant?: number;
+    carburantLitres?: number;
+  }) =>
     fetchAPI<Versement>("/versements", { method: "POST", body: JSON.stringify(data) }),
   update: (id: string, data: Partial<Versement>) =>
     fetchAPI<Versement>(`/versements/${id}`, { method: "PUT", body: JSON.stringify(data) }),
@@ -163,6 +171,9 @@ export interface Versement {
   montant: number;
   date: string;
   statut: string;
+  kilometrage?: number;
+  carburantMontant?: number;
+  carburantLitres?: number;
   voitureId: string;
   chauffeurId: string;
   voiture?: Voiture;

@@ -50,6 +50,9 @@ export default function VoitureDetailPage() {
   const [versementForm, setVersementForm] = useState({
     montant: "80000",
     date: new Date().toISOString().split("T")[0],
+    kilometrage: "",
+    carburantMontant: "",
+    carburantLitres: "",
   });
 
   useEffect(() => {
@@ -146,17 +149,27 @@ export default function VoitureDetailPage() {
       alert("Cette voiture n'a pas de chauffeur assigné");
       return;
     }
+    if (!versementForm.kilometrage) {
+      alert("Le kilométrage est obligatoire");
+      return;
+    }
     try {
       await versementsAPI.create({
         montant: Number(versementForm.montant),
         voitureId: id,
         chauffeurId: voiture.chauffeur.id,
         date: versementForm.date,
+        kilometrage: Number(versementForm.kilometrage),
+        carburantMontant: versementForm.carburantMontant ? Number(versementForm.carburantMontant) : undefined,
+        carburantLitres: versementForm.carburantLitres ? Number(versementForm.carburantLitres) : undefined,
       });
       setVersementDialogOpen(false);
       setVersementForm({
         montant: "80000",
         date: new Date().toISOString().split("T")[0],
+        kilometrage: "",
+        carburantMontant: "",
+        carburantLitres: "",
       });
       fetchVoiture();
     } catch (error) {
@@ -350,6 +363,54 @@ export default function VoitureDetailPage() {
                       })
                     }
                     required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="kilometrage">Kilométrage (km)</Label>
+                <Input
+                  id="kilometrage"
+                  type="number"
+                  value={versementForm.kilometrage}
+                  onChange={(e) =>
+                    setVersementForm({
+                      ...versementForm,
+                      kilometrage: e.target.value,
+                    })
+                  }
+                  placeholder="Ex: 125000"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="carburantMontant">Carburant (Ar)</Label>
+                  <Input
+                    id="carburantMontant"
+                    type="number"
+                    value={versementForm.carburantMontant}
+                    onChange={(e) =>
+                      setVersementForm({
+                        ...versementForm,
+                        carburantMontant: e.target.value,
+                      })
+                    }
+                    placeholder="Optionnel"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="carburantLitres">Litres</Label>
+                  <Input
+                    id="carburantLitres"
+                    type="number"
+                    value={versementForm.carburantLitres}
+                    onChange={(e) =>
+                      setVersementForm({
+                        ...versementForm,
+                        carburantLitres: e.target.value,
+                      })
+                    }
+                    placeholder="Optionnel"
                   />
                 </div>
               </div>

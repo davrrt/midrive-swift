@@ -32,7 +32,7 @@ router.get('/', async (req: Request, res: Response) => {
 // POST /api/versements - Saisir un versement
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { montant, voitureId, chauffeurId, date } = req.body;
+    const { montant, voitureId, chauffeurId, date, kilometrage, carburantMontant, carburantLitres } = req.body;
 
     // Récupérer l'objectif journalier
     const config = await prisma.configFlotte.findFirst();
@@ -47,7 +47,10 @@ router.post('/', async (req: Request, res: Response) => {
         statut,
         voitureId,
         chauffeurId,
-        date: date ? new Date(date) : new Date()
+        date: date ? new Date(date) : new Date(),
+        ...(kilometrage !== undefined && { kilometrage: parseInt(kilometrage) }),
+        ...(carburantMontant !== undefined && { carburantMontant: parseFloat(carburantMontant) }),
+        ...(carburantLitres !== undefined && { carburantLitres: parseFloat(carburantLitres) }),
       },
       include: {
         voiture: true,
